@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bike Racing Game</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    margin:0;
+    overflow:hidden;
+    background:#d7a958;
+    font-family:Impact,Arial,sans-serif;
+    user-select:none;
+    touch-action:none;
+}
+
+canvas{
+    display:block;
+}
+
+#hud{
+    position:absolute;
+    inset:10px 10px auto 10px;
+    z-index:10;
+    pointer-events:none;
+}
+
+.panel{
+    width:150px;
+    padding:10px 12px;
+    color:white;
+    background:linear-gradient(145deg,rgba(28,27,21,.94),rgba(7,7,5,.91));
+    border:3px solid rgba(255,255,255,.18);
+    border-radius:10px;
+    box-shadow:0 8px 0 rgba(0,0,0,.35),0 16px 28px rgba(0,0,0,.35);
+}
+
+#statsPanel{
+    position:absolute;
+    left:0;
+    top:0;
+}
+
+#levelPanel{
+    position:absolute;
+    right:0;
+    top:0;
+    width:154px;
+    background:linear-gradient(145deg,rgba(31,58,26,.95),rgba(6,26,11,.94));
+    border-color:rgba(126,185,74,.45);
+}
+
+.label{
+    font-size:17px;
+    line-height:1;
+    color:#f4f1e8;
+    text-shadow:2px 3px 0 #000;
+}
+
+.value{
+    margin:5px 0 7px;
+    font-size:31px;
+    line-height:.9;
+    color:#ffd32a;
+    text-shadow:2px 3px 0 #553a00;
+}
+
+.value small{
+    font-size:18px;
+    color:white;
+    text-shadow:2px 3px 0 #000;
+}
+
+.rule{
+    height:2px;
+    margin:8px 0;
+    background:rgba(255,255,255,.17);
+}
+
+.progressShell{
+    height:18px;
+    margin-top:8px;
+    padding:3px;
+    background:#08280c;
+    border:2px solid rgba(255,255,255,.12);
+    border-radius:6px;
+    box-shadow:inset 0 3px 7px rgba(0,0,0,.6);
+}
+
+#nextProgress{
+    height:100%;
+    width:0%;
+    border-radius:4px;
+    background:linear-gradient(90deg,#65ff24,#caff45);
+}
+
+#restartBtn{
+    position:absolute;
+    top:142px;
+    right:10px;
+    z-index:12;
+    padding:10px 16px;
+    color:white;
+    font-family:Impact,Arial,sans-serif;
+    font-size:19px;
+    letter-spacing:.5px;
+    border:3px solid rgba(255,255,255,.26);
+    border-radius:10px;
+    background:linear-gradient(#ff2e24,#b90908);
+    box-shadow:0 8px 0 #740000,0 15px 24px rgba(0,0,0,.4);
+    cursor:pointer;
+}
+
+#pauseBtn{
+    position:absolute;
+    top:197px;
+    right:10px;
+    z-index:12;
+    padding:10px 18px;
+    color:white;
+    font-family:Impact,Arial,sans-serif;
+    font-size:19px;
+    letter-spacing:.5px;
+    border:3px solid rgba(255,255,255,.26);
+    border-radius:10px;
+    background:linear-gradient(#3c89ff,#104aa8);
+    box-shadow:0 8px 0 #062760,0 15px 24px rgba(0,0,0,.4);
+    cursor:pointer;
+}
+
+#gearControls{
+    position:absolute;
+    right:10px;
+    top:252px;
+    z-index:11;
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    width:118px;
+}
+
+.control{
+    height:78px;
+    color:white;
+    border:3px solid rgba(255,255,255,.24);
+    border-radius:14px;
+    background:linear-gradient(145deg,#3c3c3c,#111);
+    box-shadow:0 7px 0 #070707,0 14px 24px rgba(0,0,0,.45);
+    font-family:Impact,Arial,sans-serif;
+    cursor:pointer;
+}
+
+.control:active,
+.control.active{
+    transform:translateY(5px);
+    box-shadow:0 2px 0 #070707,0 8px 15px rgba(0,0,0,.4);
+}
+
+.arrow{
+    display:block;
+    font-size:36px;
+    line-height:31px;
+    text-shadow:2px 3px 0 #000;
+}
+
+.controlText{
+    display:block;
+    margin-top:8px;
+    font-size:14px;
+    line-height:1.15;
+    text-shadow:2px 3px 0 #000;
+}
+
+@media (max-width:900px){
+    #hud{
+        inset:8px 8px auto 8px;
+    }
+
+    .panel{
+        width:96px;
+        padding:7px 8px;
+    }
+
+    #levelPanel{
+        width:104px;
+    }
+
+    .label{
+        font-size:11px;
+    }
+
+    .value{
+        font-size:20px;
+    }
+
+    .value small{
+        font-size:11px;
+    }
+
+    .rule{
+        margin:6px 0;
+    }
+
+    .progressShell{
+        height:15px;
+    }
+
+    #restartBtn{
+        top:104px;
+        right:6px;
+        padding:8px 11px;
+        font-size:13px;
+    }
+
+    #pauseBtn{
+        top:144px;
+        right:6px;
+        padding:8px 13px;
+        font-size:13px;
+    }
+
+    #gearControls{
+        top:184px;
+        right:6px;
+        width:66px;
+        gap:7px;
+    }
+
+    .control{
+        height:54px;
+        border-radius:10px;
+    }
+
+    .arrow{
+        font-size:27px;
+        line-height:23px;
+    }
+
+    .controlText{
+        font-size:9px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+    <div id="statsPanel" class="panel">
+        <div class="label">SPEED</div>
+        <div class="value"><span id="speed">15</span> <small>m/s</small></div>
+        <div class="rule"></div>
+        <div class="label">DISTANCE</div>
+        <div class="value"><span id="distance">0</span> <small>m</small></div>
+        <div class="rule"></div>
+        <div class="label">LEVEL</div>
+        <div class="value"><span id="level">1</span></div>
+        <div class="rule"></div>
+        <div class="label">GEAR</div>
+        <div class="value"><span id="gear">1</span></div>
+        <div class="rule"></div>
+        <div class="label">MONEY</div>
+        <div class="value"><small>$</small><span id="money">0</span></div>
+    </div>
+
+    <div id="levelPanel" class="panel">
+        <div class="label">NEXT LEVEL</div>
+        <div class="rule"></div>
+        <div class="value"><span id="nextLevel">500</span> <small>m</small></div>
+        <div class="progressShell"><div id="nextProgress"></div></div>
+    </div>
+</div>
+
+<button id="restartBtn">↻ RESTART</button>
+<button id="pauseBtn">Ⅱ PAUSE</button>
+
+<div id="gearControls">
+    <button class="control" id="gearUpBtn"><span class="arrow">&#8593;</span><span class="controlText">GEAR<br>UP</span></button>
+    <button class="control" id="gearDownBtn"><span class="arrow">&#8595;</span><span class="controlText">GEAR<br>DOWN</span></button>
+</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let roadWidth;
+let laneWidth;
+let laneCenters;
+
+let currentLane = 1;
+let targetBikeX = 0;
+let bike;
+
+let level = 1;
+let minSpeed = 15;
+let speed = minSpeed;
+let gear = 1;
+const maxGear = 4;
+
+let distance = 0;
+let money = 0;
+let roadOffset = 0;
+let frameTime = 0;
+let lastTime = 0;
+let carTimer = -1200;
+let coinTimer = 0;
+
+let cars = [];
+let coins = [];
+let gameOver = false;
+let paused = false;
+
+const carColors = ["#d91f1f","#f2b21d","#2366d8","#ededdd","#42b832"];
+
+function clamp(value,min,max){
+    return Math.max(min,Math.min(max,value));
+}
+
+function perspectiveAmount(y){
+    return clamp((y + canvas.height * .08) / (canvas.height * 1.08),0,1);
+}
+
+function roadScaleAt(y){
+    const t = perspectiveAmount(y);
+    return .34 + Math.pow(t,.82) * .90;
+}
+
+function visualX(x,y){
+    return canvas.width/2 + (x - canvas.width/2) * roadScaleAt(y);
+}
+
+function visualScale(y){
+    return .55 + perspectiveAmount(y) * .55;
+}
+
+function resizeGame(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    roadWidth = Math.min(520, canvas.width * .52);
+    if(canvas.width < 720){
+        roadWidth = Math.min(canvas.width * .78, 410);
+    }
+
+    laneWidth = roadWidth / 3;
+    laneCenters = [
+        canvas.width/2 - laneWidth,
+        canvas.width/2,
+        canvas.width/2 + laneWidth
+    ];
+
+    const bikeBottomGap = canvas.width < 720
+        ? Math.max(105,canvas.height * .16)
+        : Math.max(150,canvas.height * .23);
+
+    if(!bike){
+        bike = {
+            x: laneCenters[currentLane],
+            y: canvas.height - bikeBottomGap,
+            width: 48,
+            height: 92
+        };
+        targetBikeX = bike.x;
+    }else{
+        targetBikeX = laneCenters[currentLane];
+        bike.y = canvas.height - bikeBottomGap;
+    }
+}
+
+window.addEventListener("resize",resizeGame);
+resizeGame();
+
+function drawRoundedRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+}
+
+function drawSand(){
+    const sand = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+    sand.addColorStop(0,"#f0c36f");
+    sand.addColorStop(.5,"#d99e4d");
+    sand.addColorStop(1,"#f2c977");
+    ctx.fillStyle = sand;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = "rgba(102,70,32,.28)";
+    for(let i=0;i<100;i++){
+        const x = (i * 97 + roadOffset * .18) % canvas.width;
+        const y = (i * 173 + roadOffset * .72) % canvas.height;
+        const roadLeft = canvas.width/2-roadWidth/2;
+        const roadRight = canvas.width/2+roadWidth/2;
+        if(x > roadLeft - 20 && x < roadRight + 20) continue;
+        ctx.beginPath();
+        ctx.ellipse(x,y,2+(i%4),1+(i%3),0,0,Math.PI*2);
+        ctx.fill();
+    }
+}
+
+function drawRoad(){
+    drawSand();
+
+    const roadLeft = canvas.width/2-roadWidth/2;
+    const roadRight = canvas.width/2+roadWidth/2;
+    const topY = -35;
+    const bottomY = canvas.height + 55;
+    const topScale = roadScaleAt(topY);
+    const bottomScale = roadScaleAt(bottomY);
+    const topLeft = canvas.width/2 - roadWidth * topScale / 2;
+    const topRight = canvas.width/2 + roadWidth * topScale / 2;
+    const bottomLeft = canvas.width/2 - roadWidth * bottomScale / 2;
+    const bottomRight = canvas.width/2 + roadWidth * bottomScale / 2;
+
+    const road = ctx.createLinearGradient(bottomLeft,0,bottomRight,0);
+    road.addColorStop(0,"#4a2e1f");
+    road.addColorStop(.18,"#6c452c");
+    road.addColorStop(.5,"#765036");
+    road.addColorStop(.82,"#6c452c");
+    road.addColorStop(1,"#4a2e1f");
+    ctx.fillStyle = road;
+    ctx.beginPath();
+    ctx.moveTo(topLeft,topY);
+    ctx.lineTo(topRight,topY);
+    ctx.lineTo(bottomRight,bottomY);
+    ctx.lineTo(bottomLeft,bottomY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255,239,196,.95)";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(visualX(roadLeft+10,topY),topY);
+    ctx.lineTo(visualX(roadLeft+10,bottomY),bottomY);
+    ctx.moveTo(visualX(roadRight-10,topY),topY);
+    ctx.lineTo(visualX(roadRight-10,bottomY),bottomY);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255,247,219,.95)";
+    const dashSpacing = 95;
+    const dashOffset = roadOffset % dashSpacing;
+    for(let i=1;i<3;i++){
+        const laneX = roadLeft + i*laneWidth;
+        for(let y=dashOffset-dashSpacing;y<canvas.height+dashSpacing;y+=dashSpacing){
+            const dashHeight = 36 * (.72 + perspectiveAmount(y) * .28);
+            const width = 4.8;
+            const y2 = y + dashHeight;
+            const x1 = visualX(laneX,y);
+            const x2 = visualX(laneX,y2);
+
+            ctx.beginPath();
+            ctx.moveTo(x1-width/2,y);
+            ctx.lineTo(x1+width/2,y);
+            ctx.lineTo(x2+width/2,y2);
+            ctx.lineTo(x2-width/2,y2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+
+    ctx.fillStyle = "rgba(255,255,255,.04)";
+    for(let y=(roadOffset*.45)%90-90;y<canvas.height;y+=90){
+        ctx.fillRect(visualX(roadLeft+20,y),y,roadWidth*roadScaleAt(y)-40,1);
+    }
+}
+
+function drawPalm(x,y,scale){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(scale,scale);
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.beginPath();
+    ctx.ellipse(18,45,30,9,.55,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#7f4a24";
+    ctx.lineWidth = 11;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0,48);
+    ctx.quadraticCurveTo(8,20,2,-14);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#9b6230";
+    ctx.lineWidth = 4;
+    for(let i=0;i<5;i++){
+        ctx.beginPath();
+        ctx.moveTo(-3,35-i*10);
+        ctx.lineTo(6,30-i*10);
+        ctx.stroke();
+    }
+
+    const leaves = [
+        [-50,-33,-10,-45],[-36,-58,-6,-43],[-8,-70,1,-45],
+        [30,-58,5,-42],[52,-36,8,-38],[42,-13,5,-32],
+        [-42,-12,-7,-33]
+    ];
+
+    for(const leaf of leaves){
+        const grad = ctx.createLinearGradient(0,-42,leaf[0],leaf[1]);
+        grad.addColorStop(0,"#65b830");
+        grad.addColorStop(1,"#0d6123");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 11;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(0,-39);
+        ctx.quadraticCurveTo(leaf[2],leaf[3],leaf[0],leaf[1]);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
+function drawRock(x,y,scale){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(scale,scale);
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath();
+    ctx.ellipse(8,11,17,6,0,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "#8d7b61";
+    ctx.beginPath();
+    ctx.moveTo(-18,8);
+    ctx.lineTo(-8,-12);
+    ctx.lineTo(10,-16);
+    ctx.lineTo(23,2);
+    ctx.lineTo(16,18);
+    ctx.lineTo(-10,18);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,.22)";
+    ctx.beginPath();
+    ctx.moveTo(-8,-11);
+    ctx.lineTo(9,-15);
+    ctx.lineTo(2,0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawScenery(){
+    const roadLeft = canvas.width/2-roadWidth/2;
+    const roadRight = canvas.width/2+roadWidth/2;
+    const sceneryOffset = roadOffset % 230;
+
+    for(let y=sceneryOffset-230;y<canvas.height+230;y+=230){
+        drawPalm(roadLeft-75,y+30,1);
+        drawPalm(roadRight+80,y+145,.9);
+        drawRock(roadLeft-42,y+145,.72);
+        drawRock(roadRight+45,y+55,.62);
+        drawPalm(roadLeft-135,y+190,.7);
+        drawRock(roadRight+125,y+205,.45);
+    }
+}
+
+function drawBike(){
+    ctx.save();
+    const scale = visualScale(bike.y) * 1.1;
+    ctx.translate(visualX(bike.x,bike.y),bike.y);
+    ctx.scale(scale,scale);
+
+    ctx.fillStyle = "rgba(0,0,0,.36)";
+    ctx.beginPath();
+    ctx.ellipse(8,22,25,58,.05,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "#161616";
+    drawRoundedRect(-17,-40,34,88,15);
+    ctx.fill();
+
+    ctx.fillStyle = "#050505";
+    drawRoundedRect(-10,-58,20,26,10);
+    ctx.fill();
+    drawRoundedRect(-11,39,22,30,10);
+    ctx.fill();
+
+    const body = ctx.createLinearGradient(-20,-38,20,45);
+    body.addColorStop(0,"#ff442e");
+    body.addColorStop(.55,"#b70909");
+    body.addColorStop(1,"#ff3d1c");
+    ctx.fillStyle = body;
+    drawRoundedRect(-20,-27,40,65,11);
+    ctx.fill();
+
+    ctx.fillStyle = "#ffd829";
+    ctx.beginPath();
+    ctx.arc(0,-12,14,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-18,-20);
+    ctx.lineTo(-34,-30);
+    ctx.moveTo(18,-20);
+    ctx.lineTo(34,-30);
+    ctx.stroke();
+
+    ctx.fillStyle = "#fbf4d3";
+    ctx.beginPath();
+    ctx.arc(0,-47,8,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawCar(car){
+    ctx.save();
+    const scale = visualScale(car.y);
+    ctx.translate(visualX(car.x,car.y),car.y);
+    ctx.scale(scale,scale);
+
+    ctx.fillStyle = "rgba(0,0,0,.30)";
+    ctx.beginPath();
+    ctx.ellipse(7,11,29,49,.06,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.fillStyle = "#111";
+    drawRoundedRect(-29,-33,8,17,3);
+    ctx.fill();
+    drawRoundedRect(21,-33,8,17,3);
+    ctx.fill();
+    drawRoundedRect(-29,18,8,17,3);
+    ctx.fill();
+    drawRoundedRect(21,18,8,17,3);
+    ctx.fill();
+
+    const body = ctx.createLinearGradient(-22,-45,22,48);
+    body.addColorStop(0,"#ffffff");
+    body.addColorStop(.18,car.color);
+    body.addColorStop(1,"#171717");
+    ctx.fillStyle = body;
+    drawRoundedRect(-24,-45,48,90,11);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,.34)";
+    drawRoundedRect(-15,-34,30,16,5);
+    ctx.fill();
+    ctx.fillStyle = "#08111b";
+    drawRoundedRect(-17,-16,34,27,5);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.16)";
+    drawRoundedRect(-15,18,30,16,5);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255,255,255,.45)";
+    ctx.fillRect(-14,-43,28,3);
+    ctx.restore();
+}
+
+function drawCoin(coin){
+    const x = visualX(coin.x,coin.y);
+    const scale = visualScale(coin.y);
+    const radius = coin.radius * scale;
+    const shine = Math.sin((roadOffset + coin.y) * .08) * 3;
+    ctx.fillStyle = "rgba(0,0,0,.24)";
+    ctx.beginPath();
+    ctx.ellipse(x+4*scale,coin.y+7*scale,radius,5*scale,0,0,Math.PI*2);
+    ctx.fill();
+
+    const gold = ctx.createRadialGradient(x-5*scale,coin.y-6*scale,4*scale,x,coin.y,radius+3*scale);
+    gold.addColorStop(0,"#fff6a3");
+    gold.addColorStop(.45,"#ffd32a");
+    gold.addColorStop(1,"#b87409");
+    ctx.fillStyle = gold;
+    ctx.beginPath();
+    ctx.arc(x,coin.y,radius,0,Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#8b5306";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#744105";
+    ctx.font = `bold ${18*scale}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("$",x+shine*.15,coin.y+scale);
+}
+
+function moveLane(direction){
+    if(gameOver) return;
+    currentLane = Math.max(0,Math.min(2,currentLane+direction));
+    targetBikeX = laneCenters[currentLane];
+}
+
+function changeGear(direction){
+    if(gameOver || paused) return;
+    gear = clamp(gear + direction,1,maxGear);
+}
+
+function createCar(){
+    const lane = Math.floor(Math.random()*3);
+    cars.push({
+        lane,
+        x: laneCenters[lane],
+        y: -180,
+        width:50,
+        height:92,
+        speed:Math.max(0,minSpeed - 3),
+        color: carColors[Math.floor(Math.random()*carColors.length)]
+    });
+}
+
+function createCoin(){
+    const lane = Math.floor(Math.random()*3);
+    coins.push({
+        lane,
+        x: laneCenters[lane],
+        y: -60,
+        radius: 15,
+        value: 10
+    });
+}
+
+document.getElementById("gearUpBtn").addEventListener("click",()=>changeGear(1));
+document.getElementById("gearDownBtn").addEventListener("click",()=>changeGear(-1));
+
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipeTracking = false;
+
+canvas.addEventListener("pointerdown",(event)=>{
+    swipeStartX = event.clientX;
+    swipeStartY = event.clientY;
+    swipeTracking = true;
+});
+
+canvas.addEventListener("pointerup",(event)=>{
+    if(!swipeTracking || gameOver || paused) return;
+
+    const deltaX = event.clientX - swipeStartX;
+    const deltaY = event.clientY - swipeStartY;
+
+    if(Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2){
+        moveLane(deltaX > 0 ? 1 : -1);
+    }
+
+    swipeTracking = false;
+});
+
+canvas.addEventListener("pointercancel",()=>{
+    swipeTracking = false;
+});
+
+window.addEventListener("keydown",(e)=>{
+    if(gameOver) return;
+
+    if(e.key==="ArrowUp"){
+        changeGear(1);
+        e.preventDefault();
+    }
+
+    if(e.key==="ArrowDown"){
+        changeGear(-1);
+        e.preventDefault();
+    }
+
+    if(e.key==="ArrowLeft"){
+        moveLane(-1);
+    }
+
+    if(e.key==="ArrowRight"){
+        moveLane(1);
+    }
+});
+
+document.getElementById("restartBtn").addEventListener("click",()=>location.reload());
+document.getElementById("pauseBtn").addEventListener("click",()=>{
+    if(gameOver) return;
+    paused = !paused;
+    document.getElementById("pauseBtn").innerText = paused ? "▶ RESUME" : "Ⅱ PAUSE";
+});
+
+function update(dt){
+    frameTime += dt;
+
+    bike.x += (targetBikeX - bike.x) * Math.min(1,dt * 13);
+
+    const targetSpeed = Math.max(15,minSpeed + (gear - 1) * 3);
+    const changeRate = 5.5;
+    speed += (targetSpeed - speed) * Math.min(1,dt*changeRate);
+
+    roadOffset += speed * 58 * dt;
+    distance += speed * dt;
+
+    carTimer += dt * 1000;
+    coinTimer += dt * 1000;
+
+    const carSpawnDelay = 1700 * Math.pow(1.05,level-1);
+    if(carTimer >= carSpawnDelay){
+        carTimer = 0;
+        createCar();
+    }
+
+    if(coinTimer >= 950){
+        coinTimer = 0;
+        createCoin();
+    }
+
+    for(let i=cars.length-1;i>=0;i--){
+        const car = cars[i];
+        car.y += Math.max(3,speed - car.speed) * 60 * dt;
+
+        if(
+            bike.x+22 > car.x-car.width/2 &&
+            bike.x-22 < car.x+car.width/2 &&
+            bike.y+42 > car.y-car.height/2 &&
+            bike.y-42 < car.y+car.height/2
+        ){
+            gameOver = true;
+            document.getElementById("restartBtn").style.display = "block";
+        }
+
+        if(car.y > canvas.height+120){
+            cars.splice(i,1);
+        }
+    }
+
+    for(let i=coins.length-1;i>=0;i--){
+        const coin = coins[i];
+        coin.y += speed * 60 * dt;
+
+        if(
+            bike.x+22 > coin.x-coin.radius &&
+            bike.x-22 < coin.x+coin.radius &&
+            bike.y+42 > coin.y-coin.radius &&
+            bike.y-42 < coin.y+coin.radius
+        ){
+            money += coin.value;
+            coins.splice(i,1);
+        }
+
+        if(coin.y > canvas.height+50){
+            coins.splice(i,1);
+        }
+    }
+
+    if(distance >= level * 500){
+        level++;
+        minSpeed += 1;
+    }
+
+    const nextLevelDistance = level * 500;
+    const previousLevelDistance = (level-1) * 500;
+    const levelProgress = ((distance - previousLevelDistance) / 500) * 100;
+
+    document.getElementById("speed").innerText = speed.toFixed(1);
+    document.getElementById("distance").innerText = Math.floor(distance);
+    document.getElementById("level").innerText = level;
+    document.getElementById("gear").innerText = gear;
+    document.getElementById("money").innerText = money;
+    document.getElementById("nextLevel").innerText = Math.max(0,Math.ceil(nextLevelDistance-distance));
+    document.getElementById("nextProgress").style.width = Math.max(0,Math.min(100,levelProgress)) + "%";
+}
+
+function drawGameOver(){
+    if(!gameOver && !paused) return;
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "#ffd32a";
+    ctx.font = "62px Impact, Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = "#160000";
+    ctx.lineWidth = 8;
+    const title = gameOver ? "CRASH!" : "PAUSED";
+    ctx.strokeText(title,canvas.width/2,canvas.height/2-25);
+    ctx.fillText(title,canvas.width/2,canvas.height/2-25);
+    ctx.font = "28px Impact, Arial";
+    ctx.fillStyle = "white";
+    ctx.fillText(gameOver ? "PRESS RESTART" : "PRESS RESUME",canvas.width/2,canvas.height/2+35);
+}
+
+function gameLoop(time){
+    const dt = Math.min(.033,(time - lastTime || 16.67) / 1000);
+    lastTime = time;
+
+    if(!gameOver && !paused){
+        update(dt);
+    }
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawRoad();
+    drawScenery();
+
+    coins.forEach(drawCoin);
+    cars.forEach(drawCar);
+    drawBike();
+    drawGameOver();
+
+    requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+
+</body>
+</html>
